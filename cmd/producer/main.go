@@ -10,24 +10,21 @@ import (
 func main() {
 	deliveryChan := make(chan kafka.Event)
 	producer := NewKafkaProducer()
-	Publish("messagemxx", "teste", producer, nil, deliveryChan)
+	Publish("transferiu2", "teste", producer, []byte("transferencia"), deliveryChan)
 	go DeliveryReport(deliveryChan)
-	// e := <-deliveryChan
 
-	// msg := e.(*kafka.Message)
-	// if msg.TopicPartition.Error != nil {
-	// 	fmt.Println("Erro ao enviar")
-	// } else {
-	// 	fmt.Println("Mesangem enviada: ", msg.TopicPartition)
-	// }
-
-	producer.Flush(1000) // p dar tempo de enviar a mensagem
+	producer.Flush(2000) // p dar tempo de enviar a mensagem
 
 }
 
 func NewKafkaProducer() *kafka.Producer {
+	// configuration lib --> https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+
 	configMap := &kafka.ConfigMap{
-		"bootstrap.servers": "kafka-poc-kafka-1:9092",
+		"bootstrap.servers":   "kafka-poc-kafka-1:9092",
+		"delivery.timeout.ms": "0",
+		"acks":                "all",
+		"enable.idempotence":  "true",
 	}
 	p, err := kafka.NewProducer(configMap)
 	if err != nil {
