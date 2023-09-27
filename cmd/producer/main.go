@@ -9,7 +9,7 @@ import (
 func main() {
 	producer := NewKafkaProducer()
 	Publish("messagem", "teste", producer, nil)
-	producer.Flush(1000)
+	producer.Flush(1000) // p dar tempo de enviar a mensagem
 }
 
 func NewKafkaProducer() *kafka.Producer {
