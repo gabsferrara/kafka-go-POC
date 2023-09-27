@@ -10,15 +10,16 @@ import (
 func main() {
 	deliveryChan := make(chan kafka.Event)
 	producer := NewKafkaProducer()
-	Publish("messagem", "teste", producer, nil, deliveryChan)
-	e := <-deliveryChan
+	Publish("messagemxx", "teste", producer, nil, deliveryChan)
+	go DeliveryReport(deliveryChan)
+	// e := <-deliveryChan
 
-	msg := e.(*kafka.Message)
-	if msg.TopicPartition.Error != nil {
-		fmt.Println("Erro ao enviar")
-	} else {
-		fmt.Println("Mesangem enviada: ", msg.TopicPartition)
-	}
+	// msg := e.(*kafka.Message)
+	// if msg.TopicPartition.Error != nil {
+	// 	fmt.Println("Erro ao enviar")
+	// } else {
+	// 	fmt.Println("Mesangem enviada: ", msg.TopicPartition)
+	// }
 
 	producer.Flush(1000) // p dar tempo de enviar a mensagem
 
@@ -46,4 +47,20 @@ func Publish(msg string, topic string, producer *kafka.Producer, key []byte, del
 		return err
 	}
 	return nil
+}
+
+// infinityloop
+func DeliveryReport(deliveryChan chan kafka.Event) {
+	for e := range deliveryChan {
+		switch ev := e.(type) {
+		case *kafka.Message:
+			if ev.TopicPartition.Error != nil {
+				fmt.Println("Erro ao enviar")
+				// da pra por politicas de retry
+			} else {
+				fmt.Println("Mesangem enviada: ", ev.TopicPartition)
+				//da pra por checkbox
+			}
+		}
+	}
 }
